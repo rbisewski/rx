@@ -1,3 +1,4 @@
+use image::{GenericImageView};
 use png;
 
 use std::fs::File;
@@ -14,6 +15,17 @@ pub fn decode<R: io::Read>(r: R) -> io::Result<(Vec<u8>, u32, u32)> {
 }
 
 pub fn load<P: AsRef<Path>>(path: P) -> io::Result<(Vec<u8>, u32, u32)> {
+    // Bitmap image
+    if let Some(ext) = path.as_ref().extension() {
+        if ext == "bmp" {
+            let img = image::open(&path).unwrap();
+            let (width, height) = img.dimensions();
+            let buffer: Vec<u8> = img.raw_pixels();
+            return Ok((buffer, width, height));
+        }
+    }
+
+    // PNG image (default)
     let f = File::open(&path)?;
     let decoder = png::Decoder::new(f);
 

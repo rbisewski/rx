@@ -123,6 +123,15 @@ impl ResourceManager {
         let snapshot = resources.get_snapshot_mut(id);
         let (w, h) = (snapshot.width(), snapshot.height());
 
+        // Bitmap image
+        if let Some(ext) = path.as_ref().extension() {
+            if ext == "bmp" {
+                // TODO: add code to implement saving bitmaps
+                return Ok((snapshot.id, (w * h) as usize));
+            }
+        }
+
+        // PNG image (default)
         let f = File::create(path.as_ref())?;
         let ref mut out = io::BufWriter::new(f);
         let mut encoder = png::Encoder::new(out, w, h);
