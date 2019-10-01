@@ -58,3 +58,13 @@ pub fn load<P: AsRef<Path>>(path: P) -> io::Result<(Vec<u8>, u32, u32)> {
 
     Ok((buffer, width, height))
 }
+
+pub fn save_bmp<P: AsRef<Path>>(path: P, pixels: Vec<u8>, width: u32, height: u32) -> io::Result<()> {
+    image::save_buffer(path.as_ref(), &pixels, width, height, image::RGBA(8)).map_err(|_e| {
+        io::Error::new(
+            io::ErrorKind::Other,
+            format!("Unable to allocate buffer to save image."),
+        )
+    })?;
+    Ok(())
+}
