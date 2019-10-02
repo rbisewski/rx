@@ -51,6 +51,7 @@ pub const HELP: &'static str = r#"
 :p/add <color>           Add <color> to the palette, eg. #ff0011
 :brush/set <mode>        Set brush mode, eg. `xsym` and `ysym` for symmetry
 :brush/unset <mode>      Unset brush mode
+:background/set <color>  Set color of the UI background appearance, eg. #ff0011
 
 SETTINGS
 
@@ -488,6 +489,9 @@ pub struct Session {
     /// The current session `State`.
     pub state: State,
 
+    /// The color under the cursor, if any.
+    pub background: Rgba8,
+
     /// The width of the session workspace.
     pub width: f32,
     /// The height of the session workspace.
@@ -632,6 +636,7 @@ impl Session {
             state: State::Initializing,
             width: w as f32,
             height: h as f32,
+            background: color::BLACK,
             hidpi_factor,
             cursor: SessionCoords::new(0., 0.),
             base_dirs,
