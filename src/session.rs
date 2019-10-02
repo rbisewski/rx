@@ -1082,7 +1082,30 @@ impl Session {
     pub fn edit<P: AsRef<Path>>(&mut self, paths: &[P]) -> io::Result<()> {
         // TODO: Keep loading paths even if some fail?
         for path in paths {
-            let path = path.as_ref();
+            let mut path = path.as_ref();
+            let mut home;
+
+            // on Linux and BSD and MacOS, convert ~ to the user's home dir
+            if cfg!(unix) {
+                if path.starts_with("~") {
+
+                    // ensure that the base directory list can be loaded by
+                    // ensuring it has at least one element
+                    if let Some(base_dirs) = dirs::BaseDirs::new() {
+
+                        // alloc space + store a copy of home directory as an
+                        // OsString, which are easily used with Path::new()
+                        home = base_dirs.home_dir().as_os_str().to_os_string();
+                        if path == Path::new("~") {
+                            path = Path::new(&home);
+                        } else {
+                            path = &path.strip_prefix("~").unwrap();
+                            home = Path::new(&home).join(path).into_os_string();
+                            path = Path::new(&home);
+                        }
+                    }
+                }
+            }
 
             if path.is_dir() {
                 for entry in fs::read_dir(path)? {
