@@ -25,6 +25,7 @@ use std::ops::{Add, Deref, Sub};
 use std::path::Path;
 use std::str::FromStr;
 use std::time;
+use std::ffi::OsString;
 
 /// Help string.
 pub const HELP: &'static str = r#"
@@ -1072,6 +1073,34 @@ impl Session {
         self.view_coords(self.views.active_id, p)
     }
 
+    /// Expand paths, e.g. by converting ~ into the user's home directory path
+    pub fn expand_path<P: AsRef<Path>>(&mut self, path: P) -> OsString {
+            let mut path = path.as_ref();
+
+            // for Linux and BSD and MacOS
+            if cfg!(unix) && path.starts_with("~") {
+
+                // ensure that the base directory list can be loaded by
+                // ensuring it has at least one element
+                if let Some(base_dirs) = dirs::BaseDirs::new() {
+
+                    // alloc space + store a copy of home directory as an
+                    // OsString, which are easily used with Path::new()
+                    let home = base_dirs.home_dir().as_os_str().to_os_string();
+
+                    if path == Path::new("~") {
+                        return home;
+                    }
+
+                    path = &path.strip_prefix("~").unwrap();
+                    return Path::new(&home).join(path).into_os_string();
+                }
+            }
+
+            // for Windows and other platforms
+            path.as_os_str().to_os_string()
+    }
+
     /// Edit paths.
     ///
     /// Loads the given files into the session. Returns an error if one of
@@ -1082,30 +1111,8 @@ impl Session {
     pub fn edit<P: AsRef<Path>>(&mut self, paths: &[P]) -> io::Result<()> {
         // TODO: Keep loading paths even if some fail?
         for path in paths {
-            let mut path = path.as_ref();
-            let mut home;
-
-            // on Linux and BSD and MacOS, convert ~ to the user's home dir
-            if cfg!(unix) {
-                if path.starts_with("~") {
-
-                    // ensure that the base directory list can be loaded by
-                    // ensuring it has at least one element
-                    if let Some(base_dirs) = dirs::BaseDirs::new() {
-
-                        // alloc space + store a copy of home directory as an
-                        // OsString, which are easily used with Path::new()
-                        home = base_dirs.home_dir().as_os_str().to_os_string();
-                        if path == Path::new("~") {
-                            path = Path::new(&home);
-                        } else {
-                            path = &path.strip_prefix("~").unwrap();
-                            home = Path::new(&home).join(path).into_os_string();
-                            path = Path::new(&home);
-                        }
-                    }
-                }
-            }
+            let path_osstring = &self.expand_path(path);
+            let path = Path::new(path_osstring);
 
             if path.is_dir() {
                 for entry in fs::read_dir(path)? {
@@ -1154,6 +1161,10 @@ impl Session {
         id: ViewId,
         path: P,
     ) -> io::Result<()> {
+        // TODO: get this working
+        //let path_osstring = &self.expand_path(path);
+        //let path = Path::new(path_osstring);
+
         let ext = path.as_ref().extension().ok_or(io::Error::new(
             io::ErrorKind::Other,
             "file path requires an extension (.gif or .png)",
@@ -1570,7 +1581,8 @@ impl Session {
     /// Source an rx script at the given path. Returns an error if the path
     /// does not exist or the script couldn't be sourced.
     fn source_path<P: AsRef<Path>>(&mut self, path: P) -> io::Result<()> {
-        let path = path.as_ref();
+        let path_osstring = &self.expand_path(path);
+        let path = Path::new(path_osstring);
         debug!("source: {}", path.display());
 
         let f = File::open(&path)
