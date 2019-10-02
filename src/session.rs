@@ -1148,7 +1148,9 @@ impl Session {
     /// an error if the view has no file name.
     pub fn save_view(&mut self, id: ViewId) -> io::Result<()> {
         if let Some(ref f) = self.view(id).file_name().map(|f| f.clone()) {
-            self.save_view_as(id, f)
+            let path_osstring = &self.expand_path(f);
+            let path = Path::new(path_osstring);
+            self.save_view_as(id, path)
         } else {
             Err(io::Error::new(io::ErrorKind::Other, "no file name given"))
         }
@@ -1161,9 +1163,6 @@ impl Session {
         id: ViewId,
         path: P,
     ) -> io::Result<()> {
-        // TODO: get this working
-        //let path_osstring = &self.expand_path(path);
-        //let path = Path::new(path_osstring);
 
         let ext = path.as_ref().extension().ok_or(io::Error::new(
             io::ErrorKind::Other,
@@ -2062,6 +2061,8 @@ impl Session {
                 }
             }
             Command::Write(Some(ref path)) => {
+                let path_osstring = &self.expand_path(path);
+                let path = Path::new(path_osstring);
                 if let Err(e) = self.save_view_as(self.views.active_id, path) {
                     self.message(format!("Error: {}", e), MessageType::Error);
                 }
