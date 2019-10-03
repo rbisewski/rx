@@ -43,6 +43,7 @@ pub enum Command {
     CloneFrame(i32),
     RemoveFrame,
     Noop,
+    BackgroundColor(Rgba8),
     PaletteAdd(Rgba8),
     PaletteClear,
     PaletteSample,
@@ -108,6 +109,9 @@ impl fmt::Display for Command {
             }
             Self::RemoveFrame => write!(f, "Remove the last frame of the view"),
             Self::Noop => write!(f, "No-op"),
+            Self::BackgroundColor(c) => {
+                write!(f, "Set the UI background appearance to {color}", color = c)
+            }
             Self::PaletteAdd(c) => {
                 write!(f, "Add {color} to palette", color = c)
             }
@@ -470,6 +474,10 @@ impl<'a> Parse<'a> for Command {
             "brush/unset" => {
                 let (mode, p) = p.parse::<BrushMode>()?;
                 Ok((Command::BrushUnset(mode), p))
+            }
+            "background/set" => {
+                let (rgba, p) = p.parse::<Rgba8>()?;
+                Ok((Command::BackgroundColor(rgba), p))
             }
             "mode" => {
                 let (mode, p) = p.parse::<Mode>()?;

@@ -51,6 +51,7 @@ pub const HELP: &'static str = r#"
 :p/add <color>           Add <color> to the palette, eg. #ff0011
 :brush/set <mode>        Set brush mode, eg. `xsym` and `ysym` for symmetry
 :brush/unset <mode>      Unset brush mode
+:background/set <color>  Set the UI background appearance to <color>, eg. #ff0011
 
 SETTINGS
 
@@ -454,6 +455,7 @@ impl Default for Settings {
             map: hashmap! {
                 "debug" => Value::Bool(false),
                 "checker" => Value::Bool(false),
+                "background" => Value::Rgba8(color::BLACK),
                 "vsync" => Value::Bool(false),
                 "input/delay" => Value::Float(8.0),
                 "scale" => Value::Float(1.0),
@@ -487,6 +489,9 @@ pub struct Session {
     pub mode: Mode,
     /// The current session `State`.
     pub state: State,
+
+    /// The background color of the UI.
+    pub background: Rgba8,
 
     /// The width of the session workspace.
     pub width: f32,
@@ -632,6 +637,7 @@ impl Session {
             state: State::Initializing,
             width: w as f32,
             height: h as f32,
+            background: color::BLACK,
             hidpi_factor,
             cursor: SessionCoords::new(0., 0.),
             base_dirs,
