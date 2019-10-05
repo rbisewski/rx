@@ -51,17 +51,17 @@ pub const HELP: &'static str = r#"
 :p/add <color>           Add <color> to the palette, eg. #ff0011
 :brush/set <mode>        Set brush mode, eg. `xsym` and `ysym` for symmetry
 :brush/unset <mode>      Unset brush mode
-:background/set <color>  Set the UI background appearance to <color>, eg. #ff0011
 
 SETTINGS
 
-debug             on/off        Debug mode
-checker           on/off        Alpha checker toggle
-vsync             on/off        Vertical sync toggle
-input/delay       0.0..32.0     Delay between render frames (ms)
-scale             1.0..4.0      UI scale
-animation         on/off        View animation toggle
-animation/delay   1..1000       View animation delay (ms)
+debug             on/off             Debug mode
+checker           on/off             Alpha checker toggle
+vsync             on/off             Vertical sync toggle
+input/delay       0.0..32.0          Delay between render frames (ms)
+scale             1.0..4.0           UI scale
+animation         on/off             View animation toggle
+animation/delay   1..1000            View animation delay (ms)
+background        #000000..#ffffff   Set background appearance to <color>, eg. #ff0011
 "#;
 
 /// An RGB 8-bit color. Used when the alpha value isn't used.
