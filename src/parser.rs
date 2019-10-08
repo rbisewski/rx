@@ -212,7 +212,12 @@ impl<'a> Parser<'a> {
 
     pub fn path(self) -> Result<'a, String> {
         let (path, parser) = self.word()?;
-        let mut path = Path::new(path);
+        // TODO: adjust this to separate out the directory and filename for more robustness
+        let path_str = match Path::new(path).canonicalize().is_err() {
+            true => Path::new(path).to_str().unwrap().to_owned(),
+            false => Path::new(path).canonicalize().unwrap().to_str().unwrap().to_owned()
+        };
+        let mut path = Path::new(&path_str);
 
         // For Linux and BSD and MacOS.
         if cfg!(unix) && path.starts_with("~") {
