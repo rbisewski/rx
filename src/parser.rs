@@ -245,7 +245,7 @@ impl<'a> Parser<'a> {
             false => Path::new(&directory).canonicalize().unwrap().to_str().unwrap().to_owned(),
         };
 
-        let path_str = match filename == "" || directory == "" || canonical_directory == "" {
+        let path_str = match directory == "" || canonical_directory == "" {
 
             // if some string is empty or an error occurred, default to simply
             // attempting to use the non-canonical path
